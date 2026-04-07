@@ -104,17 +104,10 @@ export class MainAgent extends BaseAgent {
       const results: TaskResult[] = [];
 
       for (const agent of assignedAgents) {
-        // Filter context for sub-agent
-        const filteredContext: ExecutionContext = {
-          ...context,
-          workingMemory: {
-            ...context.workingMemory,
-            messages: [],
-            todos: [],
-          },
-        };
+        // Filter state for sub-agent (context isolation)
+        const filteredState = agent.filterStateForSubagent(task.description);
 
-        const result = await agent.executeTask(task, filteredContext);
+        const result = await agent.executeTask(task, context);
         results.push(result);
       }
 

@@ -3,4 +3,11 @@
  * @module token
  */
 
-export * from './token-tracker.js';
+export { TokenTracker } from './token-tracker.js';
+export { BudgetAllocator, createDefaultAllocator } from './budget-allocator.js';
+export {
+  RegulationEngine,
+  createRegulationEngine,
+  DEFAULT_POLICIES,
+  type RegulationPolicy,
+} from './regulation-engine.js';

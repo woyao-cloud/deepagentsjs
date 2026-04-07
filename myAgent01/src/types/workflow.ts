@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import type { AgentType } from './agent.js';
 
 /**
  * Phase status enum
@@ -159,7 +160,8 @@ export interface WorkflowValidationWarning {
   message: string;
 }
 
-// Re-export AgentType for use in Task.owners
-import { AgentType, AgentTypeSchema } from './agent.js';
+// Export PhaseStatus and TaskStatus
+export { PhaseStatus, TaskStatus };
 
-export { PhaseStatus, TaskStatus, QualityGate, Task, Phase, Rule, WorkflowMetadata, WorkflowSpec, WorkflowProgress, WorkflowValidationResult, WorkflowValidationError, WorkflowValidationWarning };
+// Re-export AgentType for convenience (used in Task.owners)
+export type { AgentType } from './agent.js';

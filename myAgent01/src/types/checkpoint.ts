@@ -4,11 +4,12 @@
  */
 
 import { z } from 'zod';
-import { SerializedMessageSchema, type SerializedMessage } from './agent.js';
-import { SerializedFileSchema, type SerializedFile } from './agent.js';
-import { SerializedTodoSchema, type SerializedTodo } from './agent.js';
-import { TaskStatusSchema, type TaskStatus } from './workflow.js';
-import { TokenUsageSchema, type TokenUsage } from './task.js';
+import type { SerializedMessage } from './agent.js';
+import type { SerializedFile } from './agent.js';
+import type { SerializedTodo } from './agent.js';
+import type { TaskStatus } from './workflow.js';
+import type { TokenUsage } from './task.js';
+import type { WorkingMemory, ShortTermMemory } from './memory.js';
 
 /**
  * Checkpoint for workflow state persistence

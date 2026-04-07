@@ -4,8 +4,11 @@
  */
 
 import { z } from 'zod';
-import { BaseMessageSchema, type BaseMessage } from './agent.js';
-import { SerializedMessageSchema, type SerializedMessage } from './agent.js';
+import type { BaseMessage, FileData, Todo, SkillMeta } from './agent.js';
+import type { SerializedMessage } from './agent.js';
+
+// Re-export FileData, Todo, SkillMeta from agent.ts
+export type { FileData, Todo, SkillMeta } from './agent.js';
 
 /**
  * Working memory - current conversation context
@@ -24,56 +27,16 @@ export interface CurrentTask {
   progress: number;
 }
 
-export interface FileData {
-  path: string;
-  content: string;
-  language?: string;
-  lastModified: Date;
-}
-
-export interface Todo {
-  id: string;
-  content: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  priority?: 'low' | 'medium' | 'high';
-  createdAt: Date;
-  completedAt?: Date;
-}
-
-export interface SkillMeta {
-  skillId: string;
-  name: string;
-  lastUsed: Date;
-  successRate: number;
-}
-
 export const WorkingMemorySchema: z.ZodType<WorkingMemory> = z.object({
-  messages: z.array(BaseMessageSchema),
+  messages: z.array(z.any()),
   currentTask: z.object({
     id: z.string(),
     description: z.string(),
     progress: z.number(),
   }).nullable(),
-  files: z.record(z.string(), z.object({
-    path: z.string(),
-    content: z.string(),
-    language: z.string().optional(),
-    lastModified: z.date(),
-  })),
-  todos: z.array(z.object({
-    id: z.string(),
-    content: z.string(),
-    status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-    createdAt: z.date(),
-    completedAt: z.date().optional(),
-  })),
-  skillsMetadata: z.record(z.string(), z.object({
-    skillId: z.string(),
-    name: z.string(),
-    lastUsed: z.date(),
-    successRate: z.number(),
-  })),
+  files: z.record(z.string(), z.any()),
+  todos: z.array(z.any()),
+  skillsMetadata: z.record(z.string(), z.any()),
 });
 
 /**
@@ -100,7 +63,7 @@ export interface TaskMemory {
   summary: string;
   keyDecisions: string[];
   learnings: string[];
-  artifacts: Artifact[];
+  artifacts: MemoryArtifact[];
   completedAt: Date;
 }
 
@@ -112,7 +75,8 @@ export interface Entity {
   lastReferencedAt: Date;
 }
 
-export interface Artifact {
+// Use MemoryArtifact to avoid conflict with task.ts Artifact
+export interface MemoryArtifact {
   type: 'file' | 'test' | 'documentation' | 'config';
   name: string;
   path: string;
