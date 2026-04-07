@@ -43,6 +43,8 @@ export interface DAG {
   nodes: DAGNode[];
   edges: DAGEdge[];
   executionOrder: string[][]; // Groups of task IDs that can run in parallel
+  getNode(id: string): DAGNode | undefined;
+  getTasks(): Map<string, Task>;
 }
 
 export const DAGSchema: z.ZodType<DAG> = z.object({
@@ -132,12 +134,40 @@ export interface DAGValidationResult {
  * Conflict report for concurrent tasks
  */
 export interface ConflictReport {
-  taskId1: string;
-  taskId2: string;
-  conflictType: 'file' | 'resource' | 'dependency';
-  conflictingFiles: string[];
+  type: 'file' | 'resource' | 'dependency';
+  resource: string;
+  tasks: string[];
   severity: 'high' | 'medium' | 'low';
+  description: string;
   resolution?: string;
+}
+
+/**
+ * Execution result from agent task execution
+ */
+export interface ExecutionResult {
+  taskId: string;
+  agentId: string;
+  status: 'success' | 'failed' | 'skipped';
+  output: TaskOutput;
+  tokenUsage: TokenUsage;
+  duration: number;
+  logs: LogEntry[];
+}
+
+/**
+ * Execution report for a complete plan
+ */
+export interface ExecutionReport {
+  planId: string;
+  phase: string;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
+  taskResults: ExecutionResult[];
+  totalTokens: TokenUsage;
+  success: boolean;
+  summary: string;
 }
 
 export { TaskStatus };

@@ -17,6 +17,7 @@ Implement a complete TypeScript-based multi-agent code generation system (myAgen
 ### 1.2 Scope
 
 **In Scope:**
+
 - Complete TypeScript project structure with LangChain/LangGraph integration
 - Workflow Manager for parsing workflow.md and building DAGs
 - Planning Generator for PLANNING.md creation
@@ -30,6 +31,7 @@ Implement a complete TypeScript-based multi-agent code generation system (myAgen
 - Version control integration (branch, commit, PR)
 
 **Out of Scope:**
+
 - Actual LLM API integration (stubbed for implementation)
 - Sandbox implementation (interface only)
 - Persistent storage backend (interface only)
@@ -37,15 +39,15 @@ Implement a complete TypeScript-based multi-agent code generation system (myAgen
 
 ### 1.3 Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Language | TypeScript 5.x |
-| Agent Framework | LangChain + LangGraph |
-| CLI | Commander.js + Inquirer.js |
-| Workflow Parsing | yaml + markdown-it |
-| Testing | Vitest |
-| Logging | pino |
-| Validation | zod |
+| Layer            | Technology                 |
+| ---------------- | -------------------------- |
+| Language         | TypeScript 5.x             |
+| Agent Framework  | LangChain + LangGraph      |
+| CLI              | Commander.js + Inquirer.js |
+| Workflow Parsing | yaml + markdown-it         |
+| Testing          | Vitest                     |
+| Logging          | pino                       |
+| Validation       | zod                        |
 
 ---
 
@@ -207,8 +209,13 @@ export interface Task {
   qualityGate?: QualityGate;
 }
 
-export type PhaseStatus = 'pending' | 'in_progress' | 'completed' | 'blocked';
-export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'skipped';
+export type PhaseStatus = "pending" | "in_progress" | "completed" | "blocked";
+export type TaskStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "failed"
+  | "skipped";
 
 // src/types/agent.ts
 export interface AgentConfig {
@@ -221,7 +228,12 @@ export interface AgentConfig {
   tokenBudget: number;
 }
 
-export type AgentType = 'main' | 'architect' | 'backend-dev' | 'frontend-dev' | 'qa-engineer';
+export type AgentType =
+  | "main"
+  | "architect"
+  | "backend-dev"
+  | "frontend-dev"
+  | "qa-engineer";
 
 export interface AgentInstance {
   id: string;
@@ -339,40 +351,42 @@ export interface Checkpoint {
 
 #### 1.1 Project Setup
 
-| File | Purpose |
-|------|---------|
-| `package.json` | Dependencies: langchain, langgraph, commander, inquirer, yaml, markdown-it, zod, pino, vitest |
-| `tsconfig.json` | Strict TypeScript config |
-| `vitest.config.ts` | Test configuration |
-| `src/index.ts` | Package entry point |
+| File               | Purpose                                                                                       |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `package.json`     | Dependencies: langchain, langgraph, commander, inquirer, yaml, markdown-it, zod, pino, vitest |
+| `tsconfig.json`    | Strict TypeScript config                                                                      |
+| `vitest.config.ts` | Test configuration                                                                            |
+| `src/index.ts`     | Package entry point                                                                           |
 
 #### 1.2 Core Types Implementation
 
-| File | Responsibility |
-|------|----------------|
-| `src/types/index.ts` | Re-exports all types |
-| `src/types/workflow.ts` | WorkflowSpec, Phase, Task, PhaseStatus, TaskStatus |
-| `src/types/agent.ts` | AgentConfig, AgentType, AgentInstance, AgentState |
-| `src/types/task.ts` | DAG, DAGNode, DAGEdge, ExecutionPlan |
-| `src/types/memory.ts` | WorkingMemory, ShortTermMemory, LongTermMemory |
-| `src/types/token.ts` | TokenBudget, TokenUsage, BudgetAllocation, BudgetStatus |
-| `src/types/checkpoint.ts` | Checkpoint, SessionSnapshot, SerializedMessage |
+| File                      | Responsibility                                          |
+| ------------------------- | ------------------------------------------------------- |
+| `src/types/index.ts`      | Re-exports all types                                    |
+| `src/types/workflow.ts`   | WorkflowSpec, Phase, Task, PhaseStatus, TaskStatus      |
+| `src/types/agent.ts`      | AgentConfig, AgentType, AgentInstance, AgentState       |
+| `src/types/task.ts`       | DAG, DAGNode, DAGEdge, ExecutionPlan                    |
+| `src/types/memory.ts`     | WorkingMemory, ShortTermMemory, LongTermMemory          |
+| `src/types/token.ts`      | TokenBudget, TokenUsage, BudgetAllocation, BudgetStatus |
+| `src/types/checkpoint.ts` | Checkpoint, SessionSnapshot, SerializedMessage          |
 
 **Deliverables:**
+
 - All type files with complete interfaces
 - Zod schemas for validation
 - Type guard functions
 
 #### 1.3 Utilities
 
-| File | Functions |
-|------|-----------|
-| `src/utils/logger.ts` | createLogger(), withContext() |
-| `src/utils/id-generator.ts` | generateId(), generateSessionId() |
-| `src/utils/file-utils.ts` | readFileSafe(), writeFileAtomic(), ensureDir() |
-| `src/utils/validation.ts` | validateSchema(), validateWorkflow(), validateAgentConfig() |
+| File                        | Functions                                                   |
+| --------------------------- | ----------------------------------------------------------- |
+| `src/utils/logger.ts`       | createLogger(), withContext()                               |
+| `src/utils/id-generator.ts` | generateId(), generateSessionId()                           |
+| `src/utils/file-utils.ts`   | readFileSafe(), writeFileAtomic(), ensureDir()              |
+| `src/utils/validation.ts`   | validateSchema(), validateWorkflow(), validateAgentConfig() |
 
 **Deliverables:**
+
 - Logger setup with pino (structured JSON logging)
 - UUID-based ID generation
 - Atomic file operations
@@ -386,11 +400,11 @@ export interface Checkpoint {
 
 #### 2.1 Config Parsers
 
-| File | Responsibility |
-|------|----------------|
+| File                            | Responsibility                   |
+| ------------------------------- | -------------------------------- |
 | `src/config/workflow-parser.ts` | Parse workflow.md → WorkflowSpec |
-| `src/config/agent-parser.ts` | Parse agent.md → AgentConfig[] |
-| `src/config/parser.ts` | Unified parser interface |
+| `src/config/agent-parser.ts`    | Parse agent.md → AgentConfig[]   |
+| `src/config/parser.ts`          | Unified parser interface         |
 
 **Key Functions:**
 
@@ -406,12 +420,13 @@ export function parseRoutingRules(content: string): RoutingRule[];
 
 #### 2.2 Config Templates
 
-| File | Purpose |
-|------|---------|
+| File                    | Purpose                   |
+| ----------------------- | ------------------------- |
 | `templates/workflow.md` | Default workflow template |
-| `templates/agent.md` | Default agent definitions |
+| `templates/agent.md`    | Default agent definitions |
 
 **Default Agent Definitions:**
+
 ```markdown
 ## Roles
 
@@ -429,6 +444,7 @@ export function parseRoutingRules(content: string): RoutingRule[];
 ```
 
 **Deliverables:**
+
 - Complete workflow.md parser with DAG support
 - Complete agent.md parser with routing rules
 - Validation of all parsed content
@@ -442,8 +458,8 @@ export function parseRoutingRules(content: string): RoutingRule[];
 
 #### 3.1 DAG Implementation
 
-| File | Responsibility |
-|------|----------------|
+| File              | Responsibility                                 |
+| ----------------- | ---------------------------------------------- |
 | `src/core/dag.ts` | DAG builder, topological sort, parallelization |
 
 **Key Functions:**
@@ -465,8 +481,8 @@ export function validateNoCycles(nodes: DAGNode[], edges: DAGEdge[]): boolean;
 
 #### 3.2 Workflow Manager
 
-| File | Responsibility |
-|------|----------------|
+| File                           | Responsibility                           |
+| ------------------------------ | ---------------------------------------- |
 | `src/core/workflow-manager.ts` | Workflow state machine, phase navigation |
 
 **Key Interface:**
@@ -475,21 +491,21 @@ export function validateNoCycles(nodes: DAGNode[], edges: DAGEdge[]): boolean;
 // src/core/workflow-manager.ts
 export class WorkflowManager {
   constructor(workflowSpec: WorkflowSpec);
-  
+
   // State queries
   getCurrentPhase(): Phase | null;
   getNextPhase(): Phase | null;
   getExecutableTasks(): Task[];
   canExecute(phaseId: string): boolean;
   getProgress(): WorkflowProgress;
-  
+
   // State transitions
   startPhase(phaseId: string): void;
   completeTask(taskId: string): void;
   failTask(taskId: string, error: Error): void;
   skipTask(taskId: string): void;
   rollbackTask(taskId: string): void;
-  
+
   // Persistence
   saveCheckpoint(): Checkpoint;
   restoreCheckpoint(checkpoint: Checkpoint): void;
@@ -497,6 +513,7 @@ export class WorkflowManager {
 ```
 
 **Deliverables:**
+
 - DAG builder with cycle detection
 - Topological sort for execution order
 - Parallel task grouping (tasks with no interdependencies)
@@ -511,10 +528,10 @@ export class WorkflowManager {
 
 #### 4.1 Base Agent Architecture
 
-| File | Responsibility |
-|------|----------------|
-| `src/agents/base-agent.ts` | Base class with LangGraph integration |
-| `src/agents/agent-factory.ts` | Dynamic agent instantiation |
+| File                          | Responsibility                        |
+| ----------------------------- | ------------------------------------- |
+| `src/agents/base-agent.ts`    | Base class with LangGraph integration |
+| `src/agents/agent-factory.ts` | Dynamic agent instantiation           |
 
 **Base Agent Interface:**
 
@@ -526,11 +543,14 @@ export abstract class BaseAgent {
   protected config: AgentConfig;
   protected state: AgentState;
   protected tools: BaseTool[];
-  
+
   abstract initialize(): Promise<void>;
-  abstract executeTask(task: Task, context: ExecutionContext): Promise<TaskResult>;
+  abstract executeTask(
+    task: Task,
+    context: ExecutionContext,
+  ): Promise<TaskResult>;
   abstract getState(): AgentState;
-  
+
   protected addMessage(message: BaseMessage): void;
   protected updateFile(path: string, content: string): void;
   protected updateTodo(todo: Todo): void;
@@ -552,7 +572,7 @@ export interface ExecutionContext {
 export class AgentFactory {
   private toolRegistry: ToolRegistry;
   private memoryRetriever: MemoryRetrieval;
-  
+
   createAgent(type: AgentType, config: AgentConfig): BaseAgent;
   createMainAgent(): MainAgent;
   createSubAgent(type: AgentType): BaseAgent;
@@ -561,20 +581,22 @@ export class AgentFactory {
 
 #### 4.3 Sub-Agent Implementations
 
-| File | Agent Type |
-|------|------------|
-| `src/agents/architect-agent.ts` | Architect Agent |
-| `src/agents/backend-dev-agent.ts` | Backend Developer Agent |
+| File                               | Agent Type               |
+| ---------------------------------- | ------------------------ |
+| `src/agents/architect-agent.ts`    | Architect Agent          |
+| `src/agents/backend-dev-agent.ts`  | Backend Developer Agent  |
 | `src/agents/frontend-dev-agent.ts` | Frontend Developer Agent |
-| `src/agents/qa-engineer-agent.ts` | QA Engineer Agent |
+| `src/agents/qa-engineer-agent.ts`  | QA Engineer Agent        |
 
 **Each Sub-Agent implements:**
+
 - Specialized tool set
 - Domain-specific instructions
 - Task execution logic
 - Result formatting
 
 **Deliverables:**
+
 - BaseAgent abstract class with LangGraph hooks
 - AgentFactory for dynamic instantiation
 - All four Sub-Agent implementations
@@ -588,13 +610,13 @@ export class AgentFactory {
 
 #### 5.1 Memory Interfaces
 
-| File | Responsibility |
-|------|----------------|
-| `src/memory/working-memory.ts` | Working memory operations |
-| `src/memory/short-term-memory.ts` | Session-scoped memory |
-| `src/memory/long-term-memory.ts` | Persistent knowledge base |
-| `src/memory/memory-retrieval.ts` | Semantic and exact retrieval |
-| `src/memory/memory-merger.ts` | Context merging utilities |
+| File                              | Responsibility               |
+| --------------------------------- | ---------------------------- |
+| `src/memory/working-memory.ts`    | Working memory operations    |
+| `src/memory/short-term-memory.ts` | Session-scoped memory        |
+| `src/memory/long-term-memory.ts`  | Persistent knowledge base    |
+| `src/memory/memory-retrieval.ts`  | Semantic and exact retrieval |
+| `src/memory/memory-merger.ts`     | Context merging utilities    |
 
 #### 5.2 Memory Operations
 
@@ -604,7 +626,7 @@ export class WorkingMemory {
   private messages: BaseMessage[];
   private files: Map<string, FileData>;
   private todos: Todo[];
-  
+
   addMessage(msg: BaseMessage): void;
   updateFile(path: string, content: string): void;
   addTodo(todo: Todo): void;
@@ -618,7 +640,7 @@ export class ShortTermMemory {
   private sessionId: string;
   private taskMemories: TaskMemory[];
   private entityKnowledge: Entity[];
-  
+
   createTaskMemory(task: Task, result: TaskResult): void;
   addEntity(entity: Entity): void;
   compress(): CompressedSession;
@@ -630,7 +652,7 @@ export class LongTermMemory {
   private skills: SkillIndex;
   private agentNotes: AgentNote[];
   private patterns: SuccessPattern[];
-  
+
   addSkill(skill: SkillEntry): void;
   addAgentNote(note: AgentNote): void;
   search(query: string, options: SearchOptions): MemoryEntry[];
@@ -646,15 +668,16 @@ export class MemoryMerger {
   merge(
     current: WorkingMemory,
     retrieved: RetrievedContext,
-    maxTokens: number
+    maxTokens: number,
   ): Promise<WorkingMemory>;
-  
+
   prioritizeByRelevance(entries: MemoryEntry[]): MemoryEntry[];
   injectSnippet(memory: WorkingMemory, snippet: ContextSnippet): WorkingMemory;
 }
 ```
 
 **Deliverables:**
+
 - WorkingMemory with message/file/todo management
 - ShortTermMemory with session tracking
 - LongTermMemory with semantic search capability
@@ -668,11 +691,11 @@ export class MemoryMerger {
 
 #### 6.1 Token Tracking
 
-| File | Responsibility |
-|------|----------------|
-| `src/token/token-tracker.ts` | Usage tracking per agent/task |
-| `src/token/budget-allocator.ts` | Initial and dynamic allocation |
-| `src/token/regulation-engine.ts` | Auto-regulation decisions |
+| File                             | Responsibility                 |
+| -------------------------------- | ------------------------------ |
+| `src/token/token-tracker.ts`     | Usage tracking per agent/task  |
+| `src/token/budget-allocator.ts`  | Initial and dynamic allocation |
+| `src/token/regulation-engine.ts` | Auto-regulation decisions      |
 
 #### 6.2 Token Interfaces
 
@@ -689,26 +712,42 @@ export class TokenTracker {
 // src/token/budget-allocator.ts
 export class BudgetAllocator {
   allocateInitial(config: BudgetConfig): BudgetAllocation;
-  reallocate(allocation: BudgetAllocation, agentId: string, priority: number): BudgetAllocation;
-  reserveEmergency(allocation: BudgetAllocation, tokens: number): BudgetAllocation;
+  reallocate(
+    allocation: BudgetAllocation,
+    agentId: string,
+    priority: number,
+  ): BudgetAllocation;
+  reserveEmergency(
+    allocation: BudgetAllocation,
+    tokens: number,
+  ): BudgetAllocation;
 }
 
 // src/token/regulation-engine.ts
 export class RegulationEngine {
-  decide(agentId: string, usage: TokenUsage, budget: TokenBudget): RegulationAction;
+  decide(
+    agentId: string,
+    usage: TokenUsage,
+    budget: TokenBudget,
+  ): RegulationAction;
   shouldCompress(agentId: string): boolean;
   shouldAbort(agentId: string): boolean;
 }
 
 export type RegulationAction =
-  | { type: 'continue' }
-  | { type: 'compress'; target: 'working' | 'short'; priority: number }
-  | { type: 'summarize'; target: 'messages'; depth: 'light' | 'medium' | 'deep' }
-  | { type: 'escalate'; reason: string }
-  | { type: 'abort'; reason: string };
+  | { type: "continue" }
+  | { type: "compress"; target: "working" | "short"; priority: number }
+  | {
+      type: "summarize";
+      target: "messages";
+      depth: "light" | "medium" | "deep";
+    }
+  | { type: "escalate"; reason: string }
+  | { type: "abort"; reason: string };
 ```
 
 **Deliverables:**
+
 - TokenTracker with per-agent/per-task tracking
 - BudgetAllocator with weight-based distribution
 - RegulationEngine with configurable thresholds
@@ -722,10 +761,10 @@ export type RegulationAction =
 
 #### 7.1 Planning Generator
 
-| File | Responsibility |
-|------|----------------|
+| File                             | Responsibility      |
+| -------------------------------- | ------------------- |
 | `src/core/planning-generator.ts` | Main planning logic |
-| `src/core/planning-templates.ts` | Output templates |
+| `src/core/planning-templates.ts` | Output templates    |
 
 #### 7.2 Planning Interfaces
 
@@ -735,11 +774,17 @@ export class PlanningGenerator {
   constructor(
     llm: BaseChatModel,
     workflowManager: WorkflowManager,
-    memoryRetriever: MemoryRetrieval
+    memoryRetriever: MemoryRetrieval,
   );
-  
-  async generatePlan(phase: Phase, context: PlanningContext): Promise<PlanningDocument>;
-  async revisePlan(current: PlanningDocument, feedback: PlanningFeedback): Promise<PlanningDocument>;
+
+  async generatePlan(
+    phase: Phase,
+    context: PlanningContext,
+  ): Promise<PlanningDocument>;
+  async revisePlan(
+    current: PlanningDocument,
+    feedback: PlanningFeedback,
+  ): Promise<PlanningDocument>;
   async validatePlan(plan: PlanningDocument): Promise<ValidationResult>;
 }
 
@@ -777,6 +822,7 @@ export interface TaskNode {
 ### Phase 2: 核心模块开发
 
 #### 2.1 商品模块
+
 - [ ] 2.1.1 后端 API 开发 (backend-dev)
   - REST API 端点设计
   - 数据库模型定义
@@ -787,28 +833,30 @@ export interface TaskNode {
   - 购物车组件
 
 #### 2.2 人员管理模块
+
 - [ ] 2.2.1 后端 API 开发 (backend-dev)
 - [ ] 2.2.2 测试用例开发 (qa-engineer)
 
 ## Tech Stack
 
-| 模块 | 技术选型 | 理由 |
-|------|---------|------|
+| 模块     | 技术选型   | 理由       |
+| -------- | ---------- | ---------- |
 | 后端框架 | Express.js | 轻量、灵活 |
-| 数据库 | PostgreSQL | 成熟稳定 |
-| 前端框架 | React 18 | 生态完善 |
+| 数据库   | PostgreSQL | 成熟稳定   |
+| 前端框架 | React 18   | 生态完善   |
 
 ## File Structure
-
 ```
+
 src/
 ├── product/
-│   ├── controllers/
-│   ├── models/
-│   ├── services/
-│   └── routes/
+│ ├── controllers/
+│ ├── models/
+│ ├── services/
+│ └── routes/
 ├── user/
-│   └── ...
+│ └── ...
+
 ```
 
 ## API Contracts
@@ -819,6 +867,7 @@ src/
 ```
 
 **Deliverables:**
+
 - PlanningGenerator with LLM integration (stubbed)
 - PlanningDocument type and validation
 - Template-based output generation
@@ -832,22 +881,18 @@ src/
 
 #### 8.1 Agent Scheduler
 
-| File | Responsibility |
-|------|----------------|
-| `src/core/agent-scheduler.ts` | Sub-Agent instantiation and routing |
-| `src/core/execution-engine.ts` | Task execution orchestration |
+| File                           | Responsibility                      |
+| ------------------------------ | ----------------------------------- |
+| `src/core/agent-scheduler.ts`  | Sub-Agent instantiation and routing |
+| `src/core/execution-engine.ts` | Task execution orchestration        |
 
 #### 8.2 Scheduler Interfaces
 
 ```typescript
 // src/core/agent-scheduler.ts
 export class AgentScheduler {
-  constructor(
-    agentFactory: AgentFactory,
-    dag: DAG,
-    tokenTracker: TokenTracker
-  );
-  
+  constructor(agentFactory: AgentFactory, dag: DAG, tokenTracker: TokenTracker);
+
   async scheduleParallel(taskIds: string[]): Promise<ExecutionResult[]>;
   async scheduleSequential(taskIds: string[]): Promise<ExecutionResult[]>;
   async executePlan(plan: PlanningDocument): Promise<ExecutionReport>;
@@ -865,7 +910,7 @@ export interface ExecutionContext {
 export interface ExecutionResult {
   taskId: string;
   agentId: string;
-  status: 'success' | 'failed' | 'skipped';
+  status: "success" | "failed" | "skipped";
   output: TaskOutput;
   tokenUsage: TokenUsage;
   duration: number;
@@ -882,13 +927,16 @@ export class ExecutionEngine {
     scheduler: AgentScheduler,
     workflowManager: WorkflowManager,
     qualityGate: QualityGate,
-    checkpointManager: CheckpointManager
+    checkpointManager: CheckpointManager,
   );
-  
-  async executePhase(phaseId: string, options: ExecutionOptions): Promise<PhaseResult>;
+
+  async executePhase(
+    phaseId: string,
+    options: ExecutionOptions,
+  ): Promise<PhaseResult>;
   async resume(): Promise<void>;
   async pause(): Promise<void>;
-  
+
   // HITL Integration
   awaitConfirmation(prompt: string): Promise<Confirmation>;
   requestApproval(operation: DangerousOperation): Promise<Approval>;
@@ -902,6 +950,7 @@ export interface ExecutionOptions {
 ```
 
 **Deliverables:**
+
 - AgentScheduler with parallel/sequential execution
 - ExecutionEngine with phase lifecycle management
 - Context isolation for Sub-Agents
@@ -916,12 +965,12 @@ export interface ExecutionOptions {
 
 #### 9.1 Quality Gate Components
 
-| File | Responsibility |
-|------|----------------|
-| `src/quality/lint-checker.ts` | Lint execution wrapper |
-| `src/quality/test-runner.ts` | Test execution wrapper |
-| `src/quality/schema-validator.ts` | API schema validation |
-| `src/quality/quality-gate.ts` | Gate orchestrator |
+| File                              | Responsibility         |
+| --------------------------------- | ---------------------- |
+| `src/quality/lint-checker.ts`     | Lint execution wrapper |
+| `src/quality/test-runner.ts`      | Test execution wrapper |
+| `src/quality/schema-validator.ts` | API schema validation  |
+| `src/quality/quality-gate.ts`     | Gate orchestrator      |
 
 #### 9.2 Quality Interfaces
 
@@ -929,7 +978,7 @@ export interface ExecutionOptions {
 // src/quality/quality-gate.ts
 export class QualityGate {
   constructor(config: QualityGateConfig);
-  
+
   async runChecks(target: string): Promise<QualityResult>;
   async runLint(target: string): Promise<LintResult>;
   async runTests(target: string): Promise<TestResult>;
@@ -960,6 +1009,7 @@ export interface TestResult {
 ```
 
 **Deliverables:**
+
 - LintChecker with configurable linters
 - TestRunner with coverage reporting
 - SchemaValidator for API contracts
@@ -974,29 +1024,32 @@ export interface TestResult {
 
 #### 10.1 Command Structure
 
-| Command | File | Functionality |
-|---------|------|---------------|
-| `init` | `src/cli/commands/init.ts` | Initialize project structure |
-| `run` | `src/cli/commands/run.ts` | Execute workflow phases |
-| `confirm` | `src/cli/commands/confirm.ts` | Confirm PLANNING.md |
-| `status` | `src/cli/commands/status.ts` | Show execution status |
-| `logs` | `src/cli/commands/logs.ts` | Tail agent logs |
-| `skip` | `src/cli/commands/skip.ts` | Skip a task |
-| `rollback` | `src/cli/commands/rollback.ts` | Rollback a task |
+| Command    | File                           | Functionality                |
+| ---------- | ------------------------------ | ---------------------------- |
+| `init`     | `src/cli/commands/init.ts`     | Initialize project structure |
+| `run`      | `src/cli/commands/run.ts`      | Execute workflow phases      |
+| `confirm`  | `src/cli/commands/confirm.ts`  | Confirm PLANNING.md          |
+| `status`   | `src/cli/commands/status.ts`   | Show execution status        |
+| `logs`     | `src/cli/commands/logs.ts`     | Tail agent logs              |
+| `skip`     | `src/cli/commands/skip.ts`     | Skip a task                  |
+| `rollback` | `src/cli/commands/rollback.ts` | Rollback a task              |
 
 #### 10.2 CLI Components
 
-| File | Responsibility |
-|------|----------------|
-| `src/cli/index.ts` | Commander.js setup |
-| `src/cli/presenter/progress.ts` | Real-time progress display |
-| `src/cli/presenter/status-view.ts` | Status report renderer |
+| File                               | Responsibility             |
+| ---------------------------------- | -------------------------- |
+| `src/cli/index.ts`                 | Commander.js setup         |
+| `src/cli/presenter/progress.ts`    | Real-time progress display |
+| `src/cli/presenter/status-view.ts` | Status report renderer     |
 
 #### 10.3 Command Implementations
 
 ```typescript
 // deepagents init --name <project>
-export async function initProject(name: string, options: InitOptions): Promise<void> {
+export async function initProject(
+  name: string,
+  options: InitOptions,
+): Promise<void> {
   // 1. Create project directory
   // 2. Generate workflow.md from template
   // 3. Generate agent.md from template
@@ -1006,7 +1059,10 @@ export async function initProject(name: string, options: InitOptions): Promise<v
 }
 
 // deepagents run --phase <plan|execute> [--parallel] [--watch] [--resume]
-export async function runPhase(phase: string, options: RunOptions): Promise<void> {
+export async function runPhase(
+  phase: string,
+  options: RunOptions,
+): Promise<void> {
   // 1. Load workflow.md and agent.md
   // 2. If --resume, restore from checkpoint
   // 3. Execute phase via ExecutionEngine
@@ -1015,7 +1071,10 @@ export async function runPhase(phase: string, options: RunOptions): Promise<void
 }
 
 // deepagents confirm --file <planning-file> [--revise]
-export async function confirmPlanning(file: string, options: ConfirmOptions): Promise<void> {
+export async function confirmPlanning(
+  file: string,
+  options: ConfirmOptions,
+): Promise<void> {
   // 1. Load PLANNING.md
   // 2. If --revise, record revision history
   // 3. Validate planning structure
@@ -1050,6 +1109,7 @@ export async function rollbackTask(taskName: string): Promise<void> {
 ```
 
 **Deliverables:**
+
 - All 8 CLI commands implemented
 - Real-time progress presenter
 - Status view with color output
@@ -1064,11 +1124,11 @@ export async function rollbackTask(taskName: string): Promise<void> {
 
 #### 11.1 VCS Components
 
-| File | Responsibility |
-|------|----------------|
+| File                        | Responsibility             |
+| --------------------------- | -------------------------- |
 | `src/vcs/branch-manager.ts` | Branch creation/management |
 | `src/vcs/commit-manager.ts` | Commit generation and push |
-| `src/vcs/pr-manager.ts` | Pull request creation |
+| `src/vcs/pr-manager.ts`     | Pull request creation      |
 
 #### 11.2 VCS Interfaces
 
@@ -1096,6 +1156,7 @@ export class PRManager {
 ```
 
 **Deliverables:**
+
 - Feature branch creation (feat/agent-{module})
 - Conventional commit message generation
 - Safe push with --force confirmation
@@ -1109,8 +1170,8 @@ export class PRManager {
 
 #### 12.1 Sandbox Interface
 
-| File | Responsibility |
-|------|----------------|
+| File                   | Responsibility              |
+| ---------------------- | --------------------------- |
 | `src/tools/sandbox.ts` | Sandbox isolation interface |
 
 #### 12.2 Sandbox Interface
@@ -1128,12 +1189,12 @@ export interface SandboxConfig {
 export interface Sandbox {
   readonly id: string;
   readonly config: SandboxConfig;
-  
+
   execute(command: string, args?: string[]): Promise<ExecutionResult>;
   readFile(path: string): Promise<string>;
   writeFile(path: string, content: string): Promise<void>;
   listFiles(pattern: string): Promise<string[]>;
-  
+
   destroy(): Promise<void>;
 }
 
@@ -1145,6 +1206,7 @@ export interface SandboxFactory {
 ```
 
 **Deliverables:**
+
 - Sandbox interface definition
 - SandboxFactory for lifecycle management
 - Command whitelist validation
@@ -1157,11 +1219,11 @@ export interface SandboxFactory {
 
 #### 13.1 Storage Components
 
-| File | Responsibility |
-|------|----------------|
-| `src/storage/session-store.ts` | Session CRUD operations |
-| `src/storage/checkpoint-manager.ts` | Checkpoint lifecycle |
-| `src/storage/snapshot-store.ts` | File snapshot management |
+| File                                | Responsibility           |
+| ----------------------------------- | ------------------------ |
+| `src/storage/session-store.ts`      | Session CRUD operations  |
+| `src/storage/checkpoint-manager.ts` | Checkpoint lifecycle     |
+| `src/storage/snapshot-store.ts`     | File snapshot management |
 
 #### 13.2 Storage Interfaces
 
@@ -1179,18 +1241,19 @@ export interface SessionStore {
 // src/storage/checkpoint-manager.ts
 export class CheckpointManager {
   constructor(store: SessionStore);
-  
+
   async createCheckpoint(workflowState: WorkflowState): Promise<Checkpoint>;
   async restoreCheckpoint(checkpointId: string): Promise<WorkflowState>;
   async listCheckpoints(): Promise<CheckpointSummary[]>;
   async deleteCheckpoint(checkpointId: string): Promise<void>;
-  
+
   async snapshotFiles(paths: string[]): Promise<SnapshotId>;
   async restoreSnapshot(snapshotId: SnapshotId): Promise<void>;
 }
 ```
 
 **Deliverables:**
+
 - SessionStore with SQLite backend (interface)
 - CheckpointManager with automatic snapshots
 - SnapshotStore for file state preservation
@@ -1204,23 +1267,23 @@ export class CheckpointManager {
 
 #### 14.1 Test Structure
 
-| Directory | Coverage |
-|-----------|----------|
-| `test/unit/` | Unit tests for each module |
+| Directory           | Coverage                        |
+| ------------------- | ------------------------------- |
+| `test/unit/`        | Unit tests for each module      |
 | `test/integration/` | Integration tests for workflows |
-| `test/e2e/` | End-to-end CLI tests |
+| `test/e2e/`         | End-to-end CLI tests            |
 
 #### 14.2 Unit Test Coverage
 
-| Module | Test Cases |
-|--------|-----------|
-| `types/` | Zod schema validation |
-| `config/` | workflow.md and agent.md parsing |
-| `core/dag.ts` | DAG building, cycle detection, topological sort |
-| `core/workflow-manager.ts` | Phase transitions, checkpointing |
-| `memory/` | Memory operations, compression |
-| `token/` | Budget tracking, regulation |
-| `quality/` | Lint/Test execution (stubbed) |
+| Module                     | Test Cases                                      |
+| -------------------------- | ----------------------------------------------- |
+| `types/`                   | Zod schema validation                           |
+| `config/`                  | workflow.md and agent.md parsing                |
+| `core/dag.ts`              | DAG building, cycle detection, topological sort |
+| `core/workflow-manager.ts` | Phase transitions, checkpointing                |
+| `memory/`                  | Memory operations, compression                  |
+| `token/`                   | Budget tracking, regulation                     |
+| `quality/`                 | Lint/Test execution (stubbed)                   |
 
 #### 14.3 Integration Test Scenarios
 
@@ -1240,6 +1303,7 @@ export class CheckpointManager {
 6. `deepagents rollback` restores previous state
 
 **Deliverables:**
+
 - 80%+ code coverage
 - All integration tests passing
 - E2E smoke tests for CLI
@@ -1252,13 +1316,13 @@ export class CheckpointManager {
 
 #### 15.1 Documentation
 
-| File | Content |
-|------|---------|
-| `README.md` | Project overview, quick start |
-| `docs/ARCHITECTURE.md` | Architecture deep-dive |
-| `docs/API.md` | API reference |
-| `docs/CLI.md` | CLI command reference |
-| `docs/CONTRIBUTING.md` | Development guide |
+| File                   | Content                       |
+| ---------------------- | ----------------------------- |
+| `README.md`            | Project overview, quick start |
+| `docs/ARCHITECTURE.md` | Architecture deep-dive        |
+| `docs/API.md`          | API reference                 |
+| `docs/CLI.md`          | CLI command reference         |
+| `docs/CONTRIBUTING.md` | Development guide             |
 
 #### 15.2 Polish Items
 
@@ -1269,6 +1333,7 @@ export class CheckpointManager {
 - Performance profiling hooks
 
 **Deliverables:**
+
 - Complete README with examples
 - Architecture documentation
 - API reference
@@ -1294,48 +1359,51 @@ Phase 4: Agent Infrastructure                      │
 Phase 5: Memory ─────────────┘                    │
     │                                             │
     ▼                                             │
-Phase 6: Token Budget                              │
+Phase 6: Token Budget                             │
     │                                             │
     ▼                                             │
 Phase 7: Planning Generator ──────────────────────┤
     │                                             │
-    ▼                                             ▼
-Phase 8: Agent Scheduler & Execution ◄─────────────┤
-    │                          │                  │
-    │                          ▼                  │
-    │    Phase 9: Quality Gates ◄─────────────────┤
-    │                          │                  │
-    │    Phase 10: CLI ◄───────┴──────────────────┤
-    │                          │                  │
-    │    Phase 11: VCS ◄───────┴──────────────────┤
-    │                          │                  │
-    │    Phase 12: Sandbox ◄───┴──────────────────┤
-    │                          │                  │
-    │    Phase 13: Storage ◄────┴─────────────────┤
-    │                          │                  │
+    ▼
+Phase 8: Agent Scheduler & Execution ◄────────────┤
+    │                                             │
+    ▼                                             │
+ Phase 9: Quality Gates ◄─────────────────────────┤
+    │                                             │
+    ▼                                             │
+ Phase 10: CLI ◄───────────────┴──────────────────┤
+    │                                             │
+    ▼                                             │
+Phase 11: VCS ◄────────────────┴──────────────────┤
+    │                                             │
+    ▼                                             │
+Phase 12: Sandbox ◄────────────┴──────────────────┤
+    │                                             │
+    ▼                                             │
+Phase 13: Storage ◄────────────┴──────────────────┤
+    │                                             │
+    ▼                                             │
+Phase 14: Integration & Testing◄──────────────────┤
+    │                                             │
+    ▼                                             │
+Phase 15: Documentation & Polish◄─────────────────┤
     └──────────────────────────┴──────────────────┘
-                    │
-                    ▼
-Phase 14: Integration & Testing
-                    │
-                    ▼
-Phase 15: Documentation & Polish
 ```
 
 ---
 
 ## 6. Risk Assessment
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| **LLM integration complexity** | High | High | Use stub implementations; interface-first design |
-| **DAG cycle detection bugs** | Medium | High | Extensive unit tests; edge case coverage |
-| **Memory leaks in long sessions** | Medium | Medium | Implement token budget enforcement; regular compression |
-| **Parallel execution race conditions** | Medium | High | Use proper locking; isolate agent state |
-| **Checkpoint corruption** | Low | High | Validate checkpoints; maintain backup snapshots |
-| **Quality gate false positives** | Medium | Low | Configurable thresholds; allow overrides |
-| **Sandbox escape** | Low | Critical | Interface-only for v1; defer implementation |
-| **Circular dependencies in modules** | Medium | Medium | Dependency injection; interface segregation |
+| Risk                                   | Likelihood | Impact   | Mitigation                                              |
+| -------------------------------------- | ---------- | -------- | ------------------------------------------------------- |
+| **LLM integration complexity**         | High       | High     | Use stub implementations; interface-first design        |
+| **DAG cycle detection bugs**           | Medium     | High     | Extensive unit tests; edge case coverage                |
+| **Memory leaks in long sessions**      | Medium     | Medium   | Implement token budget enforcement; regular compression |
+| **Parallel execution race conditions** | Medium     | High     | Use proper locking; isolate agent state                 |
+| **Checkpoint corruption**              | Low        | High     | Validate checkpoints; maintain backup snapshots         |
+| **Quality gate false positives**       | Medium     | Low      | Configurable thresholds; allow overrides                |
+| **Sandbox escape**                     | Low        | Critical | Interface-only for v1; defer implementation             |
+| **Circular dependencies in modules**   | Medium     | Medium   | Dependency injection; interface segregation             |
 
 ---
 
@@ -1345,24 +1413,24 @@ Phase 15: Documentation & Polish
 
 ```typescript
 // test/unit/dag.test.ts
-describe('DAG', () => {
-  it('should detect cycles');
-  it('should return correct topological order');
-  it('should group parallelizable tasks');
+describe("DAG", () => {
+  it("should detect cycles");
+  it("should return correct topological order");
+  it("should group parallelizable tasks");
 });
 
 // test/unit/workflow-manager.test.ts
-describe('WorkflowManager', () => {
-  it('should transition phases correctly');
-  it('should save and restore checkpoints');
-  it('should track task status');
+describe("WorkflowManager", () => {
+  it("should transition phases correctly");
+  it("should save and restore checkpoints");
+  it("should track task status");
 });
 
 // test/unit/token-tracker.test.ts
-describe('TokenTracker', () => {
-  it('should track per-agent usage');
-  it('should detect budget exceeded');
-  it('should trigger regulation at threshold');
+describe("TokenTracker", () => {
+  it("should track per-agent usage");
+  it("should detect budget exceeded");
+  it("should trigger regulation at threshold");
 });
 ```
 
@@ -1370,18 +1438,18 @@ describe('TokenTracker', () => {
 
 ```typescript
 // test/integration/workflow-parse.test.ts
-describe('Workflow Parsing', () => {
-  it('should parse valid workflow.md');
-  it('should build correct DAG from phases');
-  it('should identify parallel tasks');
+describe("Workflow Parsing", () => {
+  it("should parse valid workflow.md");
+  it("should build correct DAG from phases");
+  it("should identify parallel tasks");
 });
 
 // test/integration/execution.test.ts
-describe('Execution', () => {
-  it('should execute single task');
-  it('should execute parallel tasks');
-  it('should handle task failure');
-  it('should resume from checkpoint');
+describe("Execution", () => {
+  it("should execute single task");
+  it("should execute parallel tasks");
+  it("should handle task failure");
+  it("should resume from checkpoint");
 });
 ```
 
@@ -1389,11 +1457,11 @@ describe('Execution', () => {
 
 ```typescript
 // test/e2e/cli.test.ts
-describe('CLI', () => {
-  it('init should create project structure');
-  it('run should execute plan phase');
-  it('confirm should update planning status');
-  it('status should show progress');
+describe("CLI", () => {
+  it("init should create project structure");
+  it("run should execute plan phase");
+  it("confirm should update planning status");
+  it("status should show progress");
 });
 ```
 
@@ -1527,23 +1595,23 @@ myAgent01/src/
 
 ## 10. Estimated Timeline
 
-| Phase | Duration | Cumulative |
-|-------|----------|-------------|
-| Phase 1: Foundation | 2 days | 2 days |
-| Phase 2: Config Parsing | 2 days | 4 days |
-| Phase 3: DAG & Workflow | 2 days | 6 days |
-| Phase 4: Agent Infrastructure | 3 days | 9 days |
-| Phase 5: Memory Management | 3 days | 12 days |
-| Phase 6: Token Budget | 2 days | 14 days |
-| Phase 7: Planning Generator | 3 days | 17 days |
-| Phase 8: Scheduler & Execution | 4 days | 21 days |
-| Phase 9: Quality Gates | 2 days | 23 days |
-| Phase 10: CLI | 4 days | 27 days |
-| Phase 11: VCS | 2 days | 29 days |
-| Phase 12: Sandbox | 2 days | 31 days |
-| Phase 13: Storage | 3 days | 34 days |
-| Phase 14: Integration & Testing | 4 days | 38 days |
-| Phase 15: Documentation | 2 days | 40 days |
+| Phase                           | Duration | Cumulative |
+| ------------------------------- | -------- | ---------- |
+| Phase 1: Foundation             | 2 days   | 2 days     |
+| Phase 2: Config Parsing         | 2 days   | 4 days     |
+| Phase 3: DAG & Workflow         | 2 days   | 6 days     |
+| Phase 4: Agent Infrastructure   | 3 days   | 9 days     |
+| Phase 5: Memory Management      | 3 days   | 12 days    |
+| Phase 6: Token Budget           | 2 days   | 14 days    |
+| Phase 7: Planning Generator     | 3 days   | 17 days    |
+| Phase 8: Scheduler & Execution  | 4 days   | 21 days    |
+| Phase 9: Quality Gates          | 2 days   | 23 days    |
+| Phase 10: CLI                   | 4 days   | 27 days    |
+| Phase 11: VCS                   | 2 days   | 29 days    |
+| Phase 12: Sandbox               | 2 days   | 31 days    |
+| Phase 13: Storage               | 3 days   | 34 days    |
+| Phase 14: Integration & Testing | 4 days   | 38 days    |
+| Phase 15: Documentation         | 2 days   | 40 days    |
 
 **Total Estimated: 8 weeks (40 working days)**
 
@@ -1577,7 +1645,7 @@ async function executeTask(task: Task): Promise<TaskResult> {
   try {
     // Implementation
   } catch (error) {
-    logger.error({ taskId: task.id, error }, 'Task execution failed');
+    logger.error({ taskId: task.id, error }, "Task execution failed");
     throw new TaskExecutionError(task.id, error);
   }
 }

@@ -41,6 +41,8 @@ export interface Task {
   status: TaskStatus;
   qualityGate?: QualityGate;
   estimatedTokens?: number;
+  outputFiles?: string[];
+  resources?: string[];
 }
 
 export const TaskSchema: z.ZodType<Task> = z.object({
@@ -158,6 +160,22 @@ export interface WorkflowValidationError {
 export interface WorkflowValidationWarning {
   path: string;
   message: string;
+}
+
+/**
+ * Phase execution result
+ */
+export interface PhaseResult {
+  phaseId: string;
+  startTime: Date;
+  endTime: Date;
+  duration: number;
+  success: boolean;
+  taskResults: import('./task.js').ExecutionResult[];
+  tasksCompleted: number;
+  tasksFailed: number;
+  qualityPassed: boolean;
+  error?: string;
 }
 
 // Export PhaseStatus and TaskStatus

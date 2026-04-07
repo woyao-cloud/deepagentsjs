@@ -104,39 +104,40 @@ export abstract class BaseAgent {
   }
 
   /**
-   * Restore state from checkpoint
+   * Restore state from checkpoint (immutable)
    */
   restoreState(serialized: {
     messages: SerializedMessage[];
     files: Record<string, SerializedFile>;
     todos: SerializedTodo[];
   }): void {
-    this.state.messages = serialized.messages.map((msg, i) => ({
-      id: `restored-${i}`,
-      type: msg.type,
-      content: msg.content,
-      timestamp: new Date(),
-    }));
-
-    this.state.files = Object.fromEntries(
-      Object.entries(serialized.files).map(([path, data]) => [
-        path,
-        {
-          path: data.path,
-          content: data.content,
-          language: data.language,
-          lastModified: new Date(),
-        },
-      ])
-    );
-
-    this.state.todos = serialized.todos.map((todo, i) => ({
-      id: `restored-${i}`,
-      content: todo.content,
-      status: todo.status as Todo['status'],
-      priority: todo.priority as Todo['priority'] | undefined,
-      createdAt: new Date(),
-    }));
+    this.state = {
+      ...this.state,
+      messages: serialized.messages.map((msg, i) => ({
+        id: `restored-${i}`,
+        type: msg.type,
+        content: msg.content,
+        timestamp: new Date(),
+      })),
+      files: Object.fromEntries(
+        Object.entries(serialized.files).map(([path, data]) => [
+          path,
+          {
+            path: data.path,
+            content: data.content,
+            language: data.language,
+            lastModified: new Date(),
+          },
+        ])
+      ),
+      todos: serialized.todos.map((todo, i) => ({
+        id: `restored-${i}`,
+        content: todo.content,
+        status: todo.status as Todo['status'],
+        priority: todo.priority as Todo['priority'] | undefined,
+        createdAt: new Date(),
+      })),
+    };
   }
 
   /**
@@ -178,14 +179,27 @@ export abstract class BaseAgent {
   }
 
   /**
-   * Update or add a file in state
+   * Add system message
+   */
+  protected addSystemMessage(content: string): void {
+    this.addMessage('system', content);
+  }
+
+  /**
+   * Update or add a file in state (immutable)
    */
   protected updateFile(path: string, content: string, language?: string): void {
-    this.state.files[path] = {
-      path,
-      content,
-      language,
-      lastModified: new Date(),
+    this.state = {
+      ...this.state,
+      files: {
+        ...this.state.files,
+        [path]: {
+          path,
+          content,
+          language,
+          lastModified: new Date(),
+        },
+      },
     };
   }
 
@@ -197,24 +211,41 @@ export abstract class BaseAgent {
   }
 
   /**
-   * Add or update a todo
+   * Add or update a todo (immutable)
    */
   protected upsertTodo(todo: Omit<Todo, 'id' | 'createdAt'>): void {
-    const existing = this.state.todos.find(t => t.content === todo.content);
-    if (existing) {
-      existing.status = todo.status;
-      existing.priority = todo.priority;
-      if (todo.status === 'completed') {
-        existing.completedAt = new Date();
-      }
+    const existingIndex = this.state.todos.findIndex(t => t.content === todo.content);
+
+    if (existingIndex >= 0) {
+      // Replace existing todo with new object (immutable update)
+      this.state = {
+        ...this.state,
+        todos: this.state.todos.map((t, i) =>
+          i === existingIndex
+            ? {
+                ...t,
+                status: todo.status,
+                priority: todo.priority,
+                ...(todo.status === 'completed' && { completedAt: new Date() }),
+              }
+            : t
+        ),
+      };
     } else {
-      this.state.todos.push({
-        id: generateId(),
-        content: todo.content,
-        status: todo.status,
-        priority: todo.priority,
-        createdAt: new Date(),
-      });
+      // Add new todo (create new array)
+      this.state = {
+        ...this.state,
+        todos: [
+          ...this.state.todos,
+          {
+            id: generateId(),
+            content: todo.content,
+            status: todo.status,
+            priority: todo.priority,
+            createdAt: new Date(),
+          },
+        ],
+      };
     }
   }
 
@@ -245,9 +276,16 @@ export abstract class BaseAgent {
   }
 
   /**
-   * Check budget status
+   * Check budget status (default implementation)
    */
-  checkBudget?(): BudgetStatus;
+  checkBudget(): BudgetStatus {
+    return {
+      global: { limit: 0, used: 0, remaining: 0 },
+      agent: { limit: 0, used: 0, remaining: 0 },
+      task: { limit: 0, used: 0, remaining: 0 },
+      status: 'ok',
+    };
+  }
 
   /**
    * Get agent configuration
@@ -271,7 +309,9 @@ export abstract class BaseAgent {
   }
 
   /**
-   * Cleanup resources
+   * Cleanup resources (default implementation)
    */
-  async cleanup?(): Promise<void>;
+  async cleanup(): Promise<void> {
+    // Default no-op cleanup
+  }
 }

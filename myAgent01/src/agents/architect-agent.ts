@@ -31,6 +31,7 @@ export class ArchitectAgent extends BaseAgent {
     logger.info('Initializing Architect Agent');
     this.addSystemMessage('Architect Agent initialized - ready for architecture design tasks');
   }
+}
 
   /**
    * Execute architecture design task

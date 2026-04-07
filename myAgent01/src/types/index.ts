@@ -18,6 +18,7 @@ export type {
   WorkflowValidationResult,
   WorkflowValidationError,
   WorkflowValidationWarning,
+  PhaseResult,
 } from './workflow.js';
 export { PhaseStatusSchema, TaskStatusSchema, TaskSchema, PhaseSchema, RuleSchema, WorkflowMetadataSchema, WorkflowSpecSchema } from './workflow.js';
 
@@ -52,6 +53,8 @@ export type {
   TokenUsage,
   DAGValidationResult,
   ConflictReport,
+  ExecutionResult,
+  ExecutionReport,
 } from './task.js';
 export { DAGNodeSchema, DAGEdgeSchema, DAGSchema, TokenUsageSchema } from './task.js';
 
@@ -129,13 +132,24 @@ export type {
 } from './planning.js';
 export { TaskNodeSchema, TechStackRecommendationSchema, FileStructureSchema, APIContractSchema, RiskSchema, DeliverableSchema, PlanningDocumentSchema } from './planning.js';
 
-// Execution context for agent task execution
+// Execution context for agent task execution (plan-compatible)
 export interface ExecutionContext {
-  projectRoot: string;
-  workflowId: string;
-  sessionId: string;
-  sandboxEnabled: boolean;
-  tokenBudget: TokenBudget;
-  allowedCommands: string[];
-  checkpointDir?: string;
+  parentState?: import('./workflow.js').WorkflowSpec;
+  taskDescription: string;
+  allowedTools: string[];
+  budgetLimit: number;
+  sandbox: SandboxConfig;
+}
+
+// Workflow state for execution context
+export interface WorkflowState {
+  currentPhase: string;
+  completedPhases: string[];
+  taskStatus: Record<string, string>;
+}
+
+// Sandbox configuration
+export interface SandboxConfig {
+  enabled: boolean;
+  workspaceRoot: string;
 }

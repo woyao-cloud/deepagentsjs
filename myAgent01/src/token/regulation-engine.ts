@@ -14,9 +14,6 @@ import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger({ component: 'regulation-engine' });
 
-/**
- * Regulation Engine monitors token usage and triggers automatic actions
- */
 export class RegulationEngine {
   private currentUsage: Map<string, TokenUsage> = new Map();
   private budgets: Map<string, TokenBudget> = new Map();
@@ -173,11 +170,53 @@ export class RegulationEngine {
   }
 
   /**
-   * Determine if compression should be triggered
+   * Determine if compression should be triggered (plan-compatible)
    */
-  private shouldCompress(agentType: AgentType): boolean {
+  shouldCompress(agentId: string): boolean {
     // Compress if agent is not the main agent and usage is high
-    return agentType !== 'main';
+    return !agentId.includes('main');
+  }
+
+  /**
+   * Determine if task should be aborted (plan-compatible)
+   */
+  shouldAbort(agentId: string): boolean {
+    const usage = this.currentUsage.get(agentId);
+    const budget = this.budgets.get(agentId);
+
+    if (!usage || !budget) {
+      return false;
+    }
+
+    const usagePercent = this.sumUsage(usage) / budget.limit;
+    // Abort if severely over budget
+    return usagePercent >= 1.5; // 150% of budget
+  }
+
+  /**
+   * Decide action with direct usage/budget (plan-compatible signature)
+   */
+  decideWithBudget(agentId: string, usage: TokenUsage, budget: TokenBudget): RegulationAction {
+    const totalUsage = this.sumUsage(usage);
+    const usagePercent = totalUsage / budget.limit;
+
+    if (usagePercent >= 1.0) {
+      // Budget exceeded - escalate first
+      this.recordAction({ type: 'escalate', reason: 'Budget exceeded' }, agentId);
+      return { type: 'escalate', reason: 'Token budget exceeded' };
+    }
+
+    if (usagePercent >= budget.criticalThreshold) {
+      // Critical - compress
+      return { type: 'compress', target: 'working', priority: 1 };
+    }
+
+    if (usagePercent >= budget.warningThreshold) {
+      // Warning - summarize
+      return { type: 'summarize', target: 'messages', depth: 'medium' };
+    }
+
+    return { type: 'continue' };
   }
 
   /**

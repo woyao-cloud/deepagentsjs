@@ -9,21 +9,14 @@ import type {
   DAGEdge,
   Task,
   DAGValidationResult,
-  WorkflowValidationError,
-  WorkflowValidationWarning,
 } from '../types/index.js';
-
-type WorkflowValidationResultType = {
-  valid: boolean;
-  errors: WorkflowValidationError[];
-  warnings: WorkflowValidationWarning[];
-};
 
 /**
  * DAG Builder for constructing task dependency graphs
  */
 export class DAGBuilder {
   private nodes: Map<string, DAGNode> = new Map();
+  private taskMap: Map<string, Task> = new Map();
   private edges: DAGEdge[] = [];
 
   /**
@@ -36,6 +29,15 @@ export class DAGBuilder {
       dependencies,
       parallelGroup,
     });
+    return this;
+  }
+
+  /**
+   * Add a task to the DAG (stores task for lookup)
+   */
+  addTask(task: Task): DAGBuilder {
+    this.taskMap.set(task.id, task);
+    this.addNode(task.id, task.depends ?? []);
     return this;
   }
 
@@ -61,11 +63,7 @@ export class DAGBuilder {
     const nodes = Array.from(this.nodes.values());
     const executionOrder = this.getExecutionOrder();
 
-    return {
-      nodes,
-      edges: this.edges,
-      executionOrder,
-    };
+    return new DAGImpl(nodes, this.edges, executionOrder, this.taskMap);
   }
 
   /**
@@ -423,4 +421,24 @@ export function findCriticalPath(nodes: DAGNode[], edges: DAGEdge[], taskDuratio
 
   // Reconstruct path (simplified - returns just the last task on critical path)
   return [criticalTask];
+}
+
+/**
+ * DAG Implementation class that implements the DAG interface
+ */
+class DAGImpl implements DAG {
+  constructor(
+    private nodes: DAGNode[],
+    private edges: DAGEdge[],
+    private executionOrder: string[][],
+    private taskMap: Map<string, Task>
+  ) {}
+
+  getNode(id: string): DAGNode | undefined {
+    return this.nodes.find(n => n.id === id);
+  }
+
+  getTasks(): Map<string, Task> {
+    return new Map(this.taskMap);
+  }
 }

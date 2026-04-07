@@ -3,6 +3,7 @@
  * @module core/planning-generator
  */
 
+import type { BaseChatModel } from '@langchain/core/language_models';
 import type {
   Phase,
   Task,
@@ -15,6 +16,8 @@ import type {
   Deliverable,
   ValidationResult,
 } from '../types/planning.js';
+import type { WorkflowManager } from './workflow-manager.js';
+import type { MemoryRetrieval } from '../memory/memory-retrieval.js';
 import { generateId } from '../utils/id-generator.js';
 import { createLogger } from '../utils/logger.js';
 
@@ -41,8 +44,39 @@ export interface PlanningFeedback {
 
 /**
  * Planning Generator creates PLANNING.md documents
+ * Supports both LLM-powered and rule-based planning
  */
 export class PlanningGenerator {
+  private llm: BaseChatModel | null;
+  private workflowManager: WorkflowManager | null;
+  private memoryRetriever: MemoryRetrieval | null;
+
+  /**
+   * Create a PlanningGenerator with optional dependencies
+   * All dependencies are optional - if not provided, rule-based planning is used
+   */
+  constructor(
+    llm?: BaseChatModel,
+    workflowManager?: WorkflowManager,
+    memoryRetriever?: MemoryRetrieval
+  ) {
+    this.llm = llm ?? null;
+    this.workflowManager = workflowManager ?? null;
+    this.memoryRetriever = memoryRetriever ?? null;
+    logger.info({
+      hasLlm: !!this.llm,
+      hasWorkflowManager: !!this.workflowManager,
+      hasMemoryRetriever: !!this.memoryRetriever,
+    }, 'PlanningGenerator initialized');
+  }
+
+  /**
+   * Check if LLM-powered planning is available
+   */
+  isLLMEnabled(): boolean {
+    return !!this.llm;
+  }
+
   /**
    * Generate a planning document for a phase
    */
@@ -67,6 +101,16 @@ export class PlanningGenerator {
       risks,
       deliverables,
     };
+
+    // If LLM is available, enhance with LLM-powered suggestions
+    if (this.llm) {
+      try {
+        const enhanced = await this.enhanceWithLLM(document, context);
+        return enhanced;
+      } catch (error) {
+        logger.warn({ error }, 'LLM enhancement failed, using rule-based plan');
+      }
+    }
 
     return document;
   }
@@ -97,16 +141,86 @@ export class PlanningGenerator {
   async validatePlan(plan: PlanningDocument): Promise<ValidationResult> {
     const errors: string[] = [];
 
+    // Phase validation
     if (!plan.phase) {
       errors.push('Phase is required');
     }
 
+    // Task tree validation
     if (plan.taskTree.length === 0) {
       errors.push('Task tree cannot be empty');
     }
 
+    // Collect all task IDs for dependency validation
+    const allTaskIds = new Set<string>();
+    const collectTaskIds = (nodes: TaskNode[]): void => {
+      for (const node of nodes) {
+        allTaskIds.add(node.id);
+        collectTaskIds(node.children);
+      }
+    };
+    collectTaskIds(plan.taskTree);
+
+    // Validate task dependencies exist
+    const validateDependencies = (nodes: TaskNode[]): void => {
+      for (const node of nodes) {
+        for (const depId of node.dependencies) {
+          if (!allTaskIds.has(depId)) {
+            errors.push(`Task ${node.id} has unknown dependency: ${depId}`);
+          }
+        }
+        validateDependencies(node.children);
+      }
+    };
+    validateDependencies(plan.taskTree);
+
+    // Tech stack validation
     if (plan.techStack.recommendations.length === 0) {
       errors.push('Tech stack recommendations cannot be empty');
+    }
+
+    // File structure validation
+    if (plan.fileStructure.directories.length === 0 && plan.fileStructure.files.length === 0) {
+      errors.push('File structure cannot be empty');
+    }
+
+    // Validate file paths don't conflict
+    const filePaths = new Set<string>();
+    for (const file of plan.fileStructure.files) {
+      if (filePaths.has(file.path)) {
+        errors.push(`Duplicate file path: ${file.path}`);
+      }
+      filePaths.add(file.path);
+    }
+
+    // API contracts validation
+    for (const contract of plan.apiContracts) {
+      if (!contract.endpoint.startsWith('/')) {
+        errors.push(`API endpoint must start with /: ${contract.endpoint}`);
+      }
+      if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(contract.method)) {
+        errors.push(`Invalid HTTP method: ${contract.method}`);
+      }
+    }
+
+    // Risks validation
+    for (const risk of plan.risks) {
+      if (!['low', 'medium', 'high'].includes(risk.severity)) {
+        errors.push(`Invalid risk severity: ${risk.severity}`);
+      }
+      if (!['low', 'medium', 'high'].includes(risk.likelihood)) {
+        errors.push(`Invalid risk likelihood: ${risk.likelihood}`);
+      }
+    }
+
+    // Deliverables validation
+    for (const deliverable of plan.deliverables) {
+      if (!deliverable.owner) {
+        errors.push(`Deliverable ${deliverable.id} has no owner`);
+      }
+      if (deliverable.acceptanceCriteria.length === 0) {
+        errors.push(`Deliverable ${deliverable.id} has no acceptance criteria`);
+      }
     }
 
     // Check for circular dependencies in task tree
@@ -451,5 +565,52 @@ export class PlanningGenerator {
     }
 
     return false;
+  }
+
+  /**
+   * Enhance planning document with LLM-powered suggestions
+   * This is called automatically if an LLM is provided in the constructor
+   */
+  private async enhanceWithLLM(
+    document: PlanningDocument,
+    context: PlanningContext
+  ): Promise<PlanningDocument> {
+    if (!this.llm) {
+      return document;
+    }
+
+    logger.debug('Enhancing plan with LLM');
+
+    // Build prompt for LLM
+    const prompt = `Based on the following phase context, suggest improvements to the planning document:
+
+Phase: ${context.phase.name}
+Description: ${context.phase.description ?? 'N/A'}
+Tasks: ${context.phase.tasks.map(t => t.name).join(', ')}
+
+Current Tech Stack Recommendations:
+${document.techStack.recommendations.map(r => `- ${r.category}: ${r.technology}`).join('\n')}
+
+Provide suggestions for:
+1. Additional tech stack recommendations
+2. Potential risks not identified
+3. Missing deliverables
+4. API improvements`;
+
+    try {
+      const response = await this.llm.invoke(prompt);
+      const content = typeof response === 'string' ? response : response.content;
+
+      // In a full implementation, we would parse the LLM response
+      // and update the document accordingly
+      logger.info({ responseLength: content.length }, 'LLM enhancement received');
+
+      // For now, just log and return the original document
+      // A real implementation would parse the response and update risks/deliverables
+    } catch (error) {
+      logger.warn({ error }, 'LLM enhancement failed');
+    }
+
+    return document;
   }
 }

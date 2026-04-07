@@ -570,6 +570,8 @@ export async function cleanup(): Promise<void> {
  * API Mocks
  */
 
+import { vi } from 'vitest';
+
 export const apiMocks = {
   get: vi.fn().mockResolvedValue({ data: [] }),
   post: vi.fn().mockResolvedValue({ data: { id: 'mock-id' } }),
@@ -593,6 +595,8 @@ export function resetApiMocks() {
     return `/**
  * Database Mocks
  */
+
+import { vi } from 'vitest';
 
 export const dbMocks = {
   query: vi.fn().mockResolvedValue({ rows: [] }),

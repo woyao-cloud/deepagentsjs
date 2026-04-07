@@ -317,6 +317,65 @@ export class ShortTermMemory {
   }
 
   /**
+   * Archive session to long-term memory format
+   * Returns data suitable for LongTermMemory.addSessionArchive()
+   */
+  archive(): LongTermMemoryArchive {
+    const sessionData = this.exportForLongTerm();
+
+    // Convert task memories to agent notes for long-term storage
+    const agentNotes = sessionData.taskMemories.map(task => ({
+      noteId: `session-${sessionData.sessionId}-${task.taskId}`,
+      agentType: 'sub-agent', // Default type, can be customized
+      content: `Session ${sessionData.sessionId} - Task ${task.taskId}: ${task.summary}`,
+      context: {
+        project: '', // To be filled by caller
+        taskType: task.taskId,
+      },
+      createdAt: task.completedAt,
+      updatedAt: new Date(),
+    }));
+
+    logger.info({
+      sessionId: this.sessionId,
+      taskCount: sessionData.taskMemories.length,
+      noteCount: agentNotes.length,
+    }, 'Session archived for long-term storage');
+
+    return {
+      sessionId: sessionData.sessionId,
+      sessionStart: sessionData.sessionStart,
+      archivedAt: new Date(),
+      conversationHistory: sessionData.conversationHistory,
+      taskMemories: sessionData.taskMemories,
+      entityKnowledge: sessionData.entityKnowledge,
+      compressionStats: sessionData.compressionStats,
+      agentNotes,
+    };
+  }
+
+  /**
+   * Archive entry for long-term memory
+   */
+  interface LongTermMemoryArchive {
+    sessionId: string;
+    sessionStart: Date;
+    archivedAt: Date;
+    conversationHistory: CompressedMessage[];
+    taskMemories: TaskMemory[];
+    entityKnowledge: Entity[];
+    compressionStats: CompressionStats;
+    agentNotes: Array<{
+      noteId: string;
+      agentType: string;
+      content: string;
+      context: { project: string; taskType: string };
+      createdAt: Date;
+      updatedAt: Date;
+    }>;
+  }
+
+  /**
    * Clear all memory
    */
   clear(): void {

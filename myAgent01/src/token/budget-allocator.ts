@@ -38,8 +38,15 @@ export class BudgetAllocator {
   }
 
   /**
-   * Perform initial budget allocation
+   * Perform initial budget allocation (plan-compatible signature)
    */
+  allocateInitial(config: BudgetConfig): BudgetAllocation {
+    // Update internal config if provided
+    if (config) {
+      this.config = config;
+    }
+    return this.allocateInitialBudget();
+  }
   allocateInitialBudget(): BudgetAllocation {
     logger.info('Allocating initial budget');
 
@@ -91,9 +98,56 @@ export class BudgetAllocator {
   }
 
   /**
-   * Reallocate budget from one agent to another
+   * Reallocate budget with priority adjustment (plan-compatible signature)
    */
-  reallocate(fromAgent: AgentType, toAgent: AgentType, tokens: number): BudgetAllocation {
+  reallocate(allocation: BudgetAllocation, agentId: string, priority: number): BudgetAllocation {
+    if (!this.allocation) {
+      throw new Error('No allocation exists - call allocateInitialBudget first');
+    }
+
+    // Find agent budget
+    const agentType = agentId as AgentType;
+    const agentBudget = this.allocation.agents[agentType];
+
+    if (!agentBudget) {
+      throw new Error(`Invalid agent type: ${agentType}`);
+    }
+
+    // Adjust budget based on priority
+    const priorityMultiplier = priority / 1.0; // Normalize around 1.0
+    const newLimit = Math.floor(agentBudget.limit * priorityMultiplier);
+
+    agentBudget.limit = newLimit;
+
+    logger.info({ agentId, priority, newLimit }, 'Budget reallocated by priority');
+    return this.allocation;
+  }
+
+  /**
+   * Reserve emergency budget (plan-compatible signature)
+   */
+  reserveEmergency(allocation: BudgetAllocation, tokens: number): BudgetAllocation {
+    if (!this.allocation) {
+      throw new Error('No allocation exists - call allocateInitialBudget first');
+    }
+
+    if (tokens > this.allocation.reserved.emergency) {
+      throw new Error(`Requested ${tokens} exceeds emergency reserve: ${this.allocation.reserved.emergency}`);
+    }
+
+    // Move tokens from emergency reserve to global available
+    this.allocation.reserved.emergency -= tokens;
+    this.allocation.global.limit += tokens;
+
+    logger.info({ tokens, remaining: this.allocation.reserved.emergency }, 'Emergency budget reserved');
+    return this.allocation;
+  }
+
+  /**
+   * Legacy reallocate for backward compatibility
+   * @deprecated Use reallocate(allocation, agentId, priority) instead
+   */
+  reallocateLegacy(fromAgent: AgentType, toAgent: AgentType, tokens: number): BudgetAllocation {
     if (!this.allocation) {
       throw new Error('No allocation exists - call allocateInitialBudget first');
     }
